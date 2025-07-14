@@ -147,15 +147,15 @@ INSERT INTO Passeggero (Nome, Cognome, Data_Nascita, Documento_Identità, Telefo
 -- Inserimento voli
 INSERT INTO Volo (Numero_Volo, Data_Volo, Ora_Partenza, Ora_Arrivo, Durata, Prezzo_Economy, Prezzo_Business, Prezzo_First, ID_Aereo, Aeroporto_Partenza, Aeroporto_Arrivo) VALUES
 ('AZ100', '2025-08-15', '08:00:00', '10:30:00', 150, 89.99, 299.99, 599.99, 1, 'FCO', 'LHR'),
-('AZ101', '2025-08-15', '14:00:00', '16:30:00', 150, 89.99, 299.99, 599.99, 2, 'FCO', 'LHR'),
+('AZ101', '2025-08-22', '14:00:00', '16:30:00', 150, 89.99, 299.99, 599.99, 2, 'LHR', 'FCO'),
 ('AZ200', '2025-08-16', '09:15:00', '11:00:00', 105, 79.99, 249.99, 499.99, 1, 'FCO', 'CDG'),
 ('AZ300', '2025-08-17', '16:45:00', '17:45:00', 60, 49.99, 149.99, 299.99, 3, 'FCO', 'MXP');
 
--- Inserimento prenotazioni
-INSERT INTO Prenotazione (PNR, Stato_Prenotazione, Prezzo_Totale, ID_Passeggero) VALUES
-('ABC123', 'Confermata', 89.99, 1),
-('DEF456', 'Confermata', 179.98, 2),
-('GHI789', 'Confermata', 299.99, 3);
+INSERT INTO Prenotazione (PNR, Data_Prenotazione, Stato_Prenotazione, Prezzo_Totale, ID_Passeggero) VALUES
+('ABC123', '2025-07-15', 'Confermata', 89.99, 1),
+('DEF456', '2025-07-9', 'Confermata', 179.98, 2),
+('GHI789', '2025-07-15', 'Confermata', 299.99, 3);
+('LMN123', '2025-07-16', 'Confermata', 89.99, 2);
 
 -- Inserimento biglietti
 INSERT INTO Biglietto (Numero_Posto, Classe_Servizio, Check_In_Effettuato, Stato_Biglietto, ID_Prenotazione, Numero_Volo) VALUES
@@ -163,12 +163,14 @@ INSERT INTO Biglietto (Numero_Posto, Classe_Servizio, Check_In_Effettuato, Stato
 ('15B', 'Economy', FALSE, 'Valido', 2, 'AZ100'),
 ('15C', 'Economy', FALSE, 'Valido', 2, 'AZ101'),
 ('3A', 'Business', TRUE, 'Valido', 3, 'AZ200');
+('9B', 'Economy', FALSE, 'Valido', 4, 'AZ300');
 
 -- Inserimento pagamenti
 INSERT INTO Pagamento (Importo, Metodo_Pagamento, Stato_Pagamento, ID_Prenotazione) VALUES
 (89.99, 'Carta_Credito', 'Completato', 1),
 (179.98, 'PayPal', 'Completato', 2),
-(299.99, 'Carta_Debito', 'Completato', 3);
+(299.99, 'Carta_Debito', 'Completato', 3),
+(89.99, 'Carta_Credito', 'Completato', 4);
 
 -- ===============================================
 -- QUERY RAPPRESENTATIVE
@@ -300,7 +302,7 @@ JOIN Biglietto b ON p.ID_Prenotazione = b.ID_Prenotazione
 JOIN Pagamento pag ON p.ID_Prenotazione = pag.ID_Prenotazione
 WHERE p.Stato_Prenotazione = 'Confermata'
     AND pag.Stato_Pagamento = 'Completato'
-    AND DATE(p.Data_Prenotazione) BETWEEN '2025-08-01' AND '2025-08-31'
+    AND DATE(p.Data_Prenotazione) BETWEEN '2025-07-01' AND '2025-08-31'
 GROUP BY DATE(p.Data_Prenotazione)
 ORDER BY Data;
 
@@ -315,7 +317,7 @@ SELECT
     b.Classe_Servizio,
     ap.Città AS Città_Partenza,
     aa.Città AS Città_Arrivo,
-    p.PNR,
+    pr.PNR,
     b.Stato_Biglietto
 FROM Biglietto b
 JOIN Prenotazione pr ON b.ID_Prenotazione = pr.ID_Prenotazione
@@ -323,7 +325,7 @@ JOIN Passeggero p ON pr.ID_Passeggero = p.ID_Passeggero
 JOIN Volo v ON b.Numero_Volo = v.Numero_Volo
 JOIN Aeroporto ap ON v.Aeroporto_Partenza = ap.Codice_Aeroporto
 JOIN Aeroporto aa ON v.Aeroporto_Arrivo = aa.Codice_Aeroporto
-WHERE p.Codice_Fiscale = 'RSSMRA85C15H501Z'
+WHERE p.Codice_Fiscale = 'BNCLRA90L62H501Y'
     AND pr.Stato_Prenotazione = 'Confermata'
 ORDER BY v.Data_Volo, v.Ora_Partenza;
 
