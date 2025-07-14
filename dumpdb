@@ -1,0 +1,353 @@
+-- DUMP DB MYSQL- SISTEMA GESTIONE PRENOTAZIONI VOLI 
+--Progettazione dello schema di persistenza dei dati a supporto dei servizi di un’azienda nel settore dei trasporti 
+--UNIPEGASO NICOLO GONNELLA 0312300520
+
+
+-- Creazione del database
+CREATE DATABASE IF NOT EXISTS GestionePrenotazioniVoli;
+USE GestionePrenotazioniVoli;
+
+-- ===============================================
+-- CREAZIONE TABELLE
+-- ===============================================
+
+-- Tabella PASSEGGERO
+CREATE TABLE Passeggero (
+    ID_Passeggero INT PRIMARY KEY AUTO_INCREMENT,
+    Nome VARCHAR(50) NOT NULL,
+    Cognome VARCHAR(50) NOT NULL,
+    Data_Nascita DATE NOT NULL,
+    Documento_Identità VARCHAR(20) UNIQUE NOT NULL,
+    Telefono VARCHAR(20),
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Codice_Fiscale VARCHAR(16) UNIQUE NOT NULL
+);
+
+-- Tabella AEROPORTO
+CREATE TABLE Aeroporto (
+    Codice_Aeroporto CHAR(3) PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Città VARCHAR(50) NOT NULL,
+    Nazione VARCHAR(50) NOT NULL,
+    Fuso_Orario VARCHAR(10) NOT NULL
+);
+
+-- Tabella AEREO
+CREATE TABLE Aereo (
+    ID_Aereo INT PRIMARY KEY AUTO_INCREMENT,
+    Modello VARCHAR(50) NOT NULL,
+    Capacità_Totale INT NOT NULL,
+    Capacità_Economy INT NOT NULL,
+    Capacità_Business INT NOT NULL,
+    Capacità_First INT NOT NULL
+);
+
+-- Tabella VOLO
+CREATE TABLE Volo (
+    Numero_Volo VARCHAR(10) PRIMARY KEY,
+    Data_Volo DATE NOT NULL,
+    Ora_Partenza TIME NOT NULL,
+    Ora_Arrivo TIME NOT NULL,
+    Durata INT NOT NULL, -- in minuti
+    Prezzo_Economy DECIMAL(10,2) NOT NULL,
+    Prezzo_Business DECIMAL(10,2) NOT NULL,
+    Prezzo_First DECIMAL(10,2) NOT NULL,
+    ID_Aereo INT NOT NULL,
+    Aeroporto_Partenza CHAR(3) NOT NULL,
+    Aeroporto_Arrivo CHAR(3) NOT NULL,
+    FOREIGN KEY (ID_Aereo) REFERENCES Aereo(ID_Aereo),
+    FOREIGN KEY (Aeroporto_Partenza) REFERENCES Aeroporto(Codice_Aeroporto),
+    FOREIGN KEY (Aeroporto_Arrivo) REFERENCES Aeroporto(Codice_Aeroporto)
+);
+
+-- Tabella PRENOTAZIONE
+CREATE TABLE Prenotazione (
+    ID_Prenotazione INT PRIMARY KEY AUTO_INCREMENT,
+    PNR CHAR(6) UNIQUE NOT NULL,
+    Data_Prenotazione TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Stato_Prenotazione ENUM('Confermata', 'Annullata', 'Scaduta') DEFAULT 'Confermata',
+    Prezzo_Totale DECIMAL(10,2) NOT NULL,
+    ID_Passeggero INT NOT NULL,
+    FOREIGN KEY (ID_Passeggero) REFERENCES Passeggero(ID_Passeggero)
+);
+
+-- Tabella BIGLIETTO
+CREATE TABLE Biglietto (
+    ID_Biglietto INT PRIMARY KEY AUTO_INCREMENT,
+    Numero_Posto VARCHAR(5) NOT NULL,
+    Classe_Servizio ENUM('Economy', 'Business', 'First') NOT NULL,
+    Check_In_Effettuato BOOLEAN DEFAULT FALSE,
+    Stato_Biglietto ENUM('Valido', 'Utilizzato', 'Annullato') DEFAULT 'Valido',
+    ID_Prenotazione INT NOT NULL,
+    Numero_Volo VARCHAR(10) NOT NULL,
+    FOREIGN KEY (ID_Prenotazione) REFERENCES Prenotazione(ID_Prenotazione),
+    FOREIGN KEY (Numero_Volo) REFERENCES Volo(Numero_Volo)
+);
+
+-- Tabella PAGAMENTO
+CREATE TABLE Pagamento (
+    ID_Pagamento INT PRIMARY KEY AUTO_INCREMENT,
+    Importo DECIMAL(10,2) NOT NULL,
+    Metodo_Pagamento ENUM('Carta_Credito', 'Carta_Debito', 'PayPal', 'Bonifico') NOT NULL,
+    Data_Pagamento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Stato_Pagamento ENUM('Completato', 'Fallito', 'In_Corso') DEFAULT 'In_Corso',
+    ID_Prenotazione INT UNIQUE NOT NULL,
+    FOREIGN KEY (ID_Prenotazione) REFERENCES Prenotazione(ID_Prenotazione)
+);
+
+-- VINCOLI DI INTEGRITÀ
+
+-- Vincoli aggiuntivi per integrità dei dati
+ALTER TABLE Volo ADD CONSTRAINT chk_durata_positiva CHECK (Durata > 0);
+ALTER TABLE Volo ADD CONSTRAINT chk_prezzi_positivi CHECK (Prezzo_Economy > 0 AND Prezzo_Business > 0 AND Prezzo_First > 0);
+ALTER TABLE Prenotazione ADD CONSTRAINT chk_prezzo_totale_positivo CHECK (Prezzo_Totale > 0);
+ALTER TABLE Pagamento ADD CONSTRAINT chk_importo_positivo CHECK (Importo > 0);
+ALTER TABLE Aereo ADD CONSTRAINT chk_capacità_logica CHECK (Capacità_Totale = Capacità_Economy + Capacità_Business + Capacità_First);
+
+-- ===============================================
+-- INDICI PER OTTIMIZZAZIONE
+-- ===============================================
+
+-- Indici per ottimizzare le query più frequenti
+CREATE INDEX idx_volo_data_partenza ON Volo(Data_Volo, Aeroporto_Partenza);
+CREATE INDEX idx_volo_data_arrivo ON Volo(Data_Volo, Aeroporto_Arrivo);
+CREATE INDEX idx_prenotazione_passeggero ON Prenotazione(ID_Passeggero);
+CREATE INDEX idx_prenotazione_pnr ON Prenotazione(PNR);
+CREATE INDEX idx_biglietto_prenotazione ON Biglietto(ID_Prenotazione);
+CREATE INDEX idx_biglietto_volo ON Biglietto(Numero_Volo);
+CREATE INDEX idx_passeggero_email ON Passeggero(Email);
+CREATE INDEX idx_passeggero_codice_fiscale ON Passeggero(Codice_Fiscale);
+CREATE INDEX idx_pagamento_stato ON Pagamento(Stato_Pagamento);
+
+-- ===============================================
+-- DATI DI ESEMPIO
+-- ===============================================
+
+-- Inserimento aeroporti
+INSERT INTO Aeroporto (Codice_Aeroporto, Nome, Città, Nazione, Fuso_Orario) VALUES
+('FCO', 'Aeroporto di Roma-Fiumicino', 'Roma', 'Italia', '+01:00'),
+('LHR', 'Heathrow Airport', 'Londra', 'Regno Unito', '+00:00'),
+('CDG', 'Aéroport Charles de Gaulle', 'Parigi', 'Francia', '+01:00'),
+('MXP', 'Aeroporto di Milano-Malpensa', 'Milano', 'Italia', '+01:00'),
+('BCN', 'Aeroporto di Barcellona-El Prat', 'Barcellona', 'Spagna', '+01:00');
+
+-- Inserimento aerei
+INSERT INTO Aereo (Modello, Capacità_Totale, Capacità_Economy, Capacità_Business, Capacità_First) VALUES
+('Airbus A320', 180, 150, 24, 6),
+('Boeing 737', 189, 162, 21, 6),
+('Airbus A330', 277, 214, 48, 15),
+('Boeing 777', 396, 296, 80, 20);
+
+-- Inserimento passeggeri
+INSERT INTO Passeggero (Nome, Cognome, Data_Nascita, Documento_Identità, Telefono, Email, Codice_Fiscale) VALUES
+('Mario', 'Rossi', '1985-03-15', 'IT123456789', '+39-333-1234567', 'mario.rossi@email.com', 'RSSMRA85C15H501Z'),
+('Laura', 'Bianchi', '1990-07-22', 'IT987654321', '+39-333-9876543', 'laura.bianchi@email.com', 'BNCLRA90L62H501Y'),
+('Giuseppe', 'Verdi', '1978-12-10', 'IT456789123', '+39-333-4567891', 'giuseppe.verdi@email.com', 'VRDGPP78T10H501X');
+
+-- Inserimento voli
+INSERT INTO Volo (Numero_Volo, Data_Volo, Ora_Partenza, Ora_Arrivo, Durata, Prezzo_Economy, Prezzo_Business, Prezzo_First, ID_Aereo, Aeroporto_Partenza, Aeroporto_Arrivo) VALUES
+('AZ100', '2025-08-15', '08:00:00', '10:30:00', 150, 89.99, 299.99, 599.99, 1, 'FCO', 'LHR'),
+('AZ101', '2025-08-15', '14:00:00', '16:30:00', 150, 89.99, 299.99, 599.99, 2, 'FCO', 'LHR'),
+('AZ200', '2025-08-16', '09:15:00', '11:00:00', 105, 79.99, 249.99, 499.99, 1, 'FCO', 'CDG'),
+('AZ300', '2025-08-17', '16:45:00', '17:45:00', 60, 49.99, 149.99, 299.99, 3, 'FCO', 'MXP');
+
+-- Inserimento prenotazioni
+INSERT INTO Prenotazione (PNR, Stato_Prenotazione, Prezzo_Totale, ID_Passeggero) VALUES
+('ABC123', 'Confermata', 89.99, 1),
+('DEF456', 'Confermata', 179.98, 2),
+('GHI789', 'Confermata', 299.99, 3);
+
+-- Inserimento biglietti
+INSERT INTO Biglietto (Numero_Posto, Classe_Servizio, Check_In_Effettuato, Stato_Biglietto, ID_Prenotazione, Numero_Volo) VALUES
+('12A', 'Economy', FALSE, 'Valido', 1, 'AZ100'),
+('15B', 'Economy', FALSE, 'Valido', 2, 'AZ100'),
+('15C', 'Economy', FALSE, 'Valido', 2, 'AZ101'),
+('3A', 'Business', TRUE, 'Valido', 3, 'AZ200');
+
+-- Inserimento pagamenti
+INSERT INTO Pagamento (Importo, Metodo_Pagamento, Stato_Pagamento, ID_Prenotazione) VALUES
+(89.99, 'Carta_Credito', 'Completato', 1),
+(179.98, 'PayPal', 'Completato', 2),
+(299.99, 'Carta_Debito', 'Completato', 3);
+
+-- ===============================================
+-- QUERY RAPPRESENTATIVE
+-- ===============================================
+
+-- 1. Ricerca voli disponibili tra due aeroporti in una data specifica
+SELECT
+    v.Numero_Volo,
+    v.Ora_Partenza,
+    v.Ora_Arrivo,
+    v.Durata,
+    v.Prezzo_Economy,
+    v.Prezzo_Business,
+    v.Prezzo_First,
+    ap.Nome AS Aeroporto_Partenza,
+    aa.Nome AS Aeroporto_Arrivo,
+    (a.Capacità_Economy - COALESCE(posti_occupati.Economy, 0)) AS Posti_Economy_Disponibili,
+    (a.Capacità_Business - COALESCE(posti_occupati.Business, 0)) AS Posti_Business_Disponibili,
+    (a.Capacità_First - COALESCE(posti_occupati.First, 0)) AS Posti_First_Disponibili
+FROM Volo v
+JOIN Aeroporto ap ON v.Aeroporto_Partenza = ap.Codice_Aeroporto
+JOIN Aeroporto aa ON v.Aeroporto_Arrivo = aa.Codice_Aeroporto
+JOIN Aereo a ON v.ID_Aereo = a.ID_Aereo
+LEFT JOIN (
+    SELECT
+        b.Numero_Volo,
+        SUM(CASE WHEN b.Classe_Servizio = 'Economy' THEN 1 ELSE 0 END) AS Economy,
+        SUM(CASE WHEN b.Classe_Servizio = 'Business' THEN 1 ELSE 0 END) AS Business,
+        SUM(CASE WHEN b.Classe_Servizio = 'First' THEN 1 ELSE 0 END) AS First
+    FROM Biglietto b
+    JOIN Prenotazione p ON b.ID_Prenotazione = p.ID_Prenotazione
+    WHERE p.Stato_Prenotazione = 'Confermata' AND b.Stato_Biglietto = 'Valido'
+    GROUP BY b.Numero_Volo
+) posti_occupati ON v.Numero_Volo = posti_occupati.Numero_Volo
+WHERE v.Data_Volo = '2025-08-15'
+    AND v.Aeroporto_Partenza = 'FCO'
+    AND v.Aeroporto_Arrivo = 'LHR'
+    AND (a.Capacità_Economy - COALESCE(posti_occupati.Economy, 0)) > 0
+ORDER BY v.Ora_Partenza;
+
+-- 2. Storico prenotazioni di un cliente specifico
+SELECT
+    p.PNR,
+    p.Data_Prenotazione,
+    p.Stato_Prenotazione,
+    p.Prezzo_Totale,
+    COUNT(b.ID_Biglietto) AS Numero_Biglietti,
+    GROUP_CONCAT(
+        CONCAT(v.Numero_Volo, ' (', ap.Città, '-', aa.Città, ')')
+        ORDER BY v.Data_Volo, v.Ora_Partenza
+        SEPARATOR ', '
+    ) AS Voli
+FROM Prenotazione p
+JOIN Passeggero pa ON p.ID_Passeggero = pa.ID_Passeggero
+JOIN Biglietto b ON p.ID_Prenotazione = b.ID_Prenotazione
+JOIN Volo v ON b.Numero_Volo = v.Numero_Volo
+JOIN Aeroporto ap ON v.Aeroporto_Partenza = ap.Codice_Aeroporto
+JOIN Aeroporto aa ON v.Aeroporto_Arrivo = aa.Codice_Aeroporto
+WHERE pa.Email = 'mario.rossi@email.com'
+GROUP BY p.ID_Prenotazione
+ORDER BY p.Data_Prenotazione DESC;
+
+-- 3. Verifica validità e dettagli di un biglietto
+SELECT
+    b.ID_Biglietto,
+    b.Numero_Posto,
+    b.Classe_Servizio,
+    b.Check_In_Effettuato,
+    b.Stato_Biglietto,
+    p.PNR,
+    pa.Nome,
+    pa.Cognome,
+    pa.Documento_Identità,
+    v.Numero_Volo,
+    v.Data_Volo,
+    v.Ora_Partenza,
+    v.Ora_Arrivo,
+    ap.Nome AS Aeroporto_Partenza,
+    aa.Nome AS Aeroporto_Arrivo,
+    pag.Stato_Pagamento
+FROM Biglietto b
+JOIN Prenotazione p ON b.ID_Prenotazione = p.ID_Prenotazione
+JOIN Passeggero pa ON p.ID_Passeggero = pa.ID_Passeggero
+JOIN Volo v ON b.Numero_Volo = v.Numero_Volo
+JOIN Aeroporto ap ON v.Aeroporto_Partenza = ap.Codice_Aeroporto
+JOIN Aeroporto aa ON v.Aeroporto_Arrivo = aa.Codice_Aeroporto
+JOIN Pagamento pag ON p.ID_Prenotazione = pag.ID_Prenotazione
+WHERE p.PNR = 'ABC123'
+    AND b.Stato_Biglietto = 'Valido'
+    AND p.Stato_Prenotazione = 'Confermata'
+    AND pag.Stato_Pagamento = 'Completato';
+
+-- 4. Statistiche di occupazione per volo
+SELECT
+    v.Numero_Volo,
+    v.Data_Volo,
+    ap.Città AS Partenza,
+    aa.Città AS Arrivo,
+    a.Capacità_Totale,
+    COUNT(b.ID_Biglietto) AS Posti_Venduti,
+    ROUND((COUNT(b.ID_Biglietto) / a.Capacità_Totale) * 100, 2) AS Percentuale_Occupazione,
+    SUM(CASE WHEN b.Classe_Servizio = 'Economy' THEN 1 ELSE 0 END) AS Economy_Venduti,
+    SUM(CASE WHEN b.Classe_Servizio = 'Business' THEN 1 ELSE 0 END) AS Business_Venduti,
+    SUM(CASE WHEN b.Classe_Servizio = 'First' THEN 1 ELSE 0 END) AS First_Venduti
+FROM Volo v
+JOIN Aeroporto ap ON v.Aeroporto_Partenza = ap.Codice_Aeroporto
+JOIN Aeroporto aa ON v.Aeroporto_Arrivo = aa.Codice_Aeroporto
+JOIN Aereo a ON v.ID_Aereo = a.ID_Aereo
+LEFT JOIN Biglietto b ON v.Numero_Volo = b.Numero_Volo
+LEFT JOIN Prenotazione p ON b.ID_Prenotazione = p.ID_Prenotazione
+WHERE (p.Stato_Prenotazione = 'Confermata' OR p.Stato_Prenotazione IS NULL)
+    AND (b.Stato_Biglietto = 'Valido' OR b.Stato_Biglietto IS NULL)
+    AND v.Data_Volo BETWEEN '2025-08-01' AND '2025-08-31'
+GROUP BY v.Numero_Volo, v.Data_Volo
+ORDER BY v.Data_Volo, v.Ora_Partenza;
+
+-- 5. Report ricavi giornalieri per periodo
+SELECT
+    DATE(p.Data_Prenotazione) AS Data,
+    COUNT(DISTINCT p.ID_Prenotazione) AS Prenotazioni_Totali,
+    COUNT(b.ID_Biglietto) AS Biglietti_Venduti,
+    SUM(p.Prezzo_Totale) AS Ricavi_Totali,
+    AVG(p.Prezzo_Totale) AS Ricavo_Medio_Prenotazione,
+    SUM(CASE WHEN b.Classe_Servizio = 'Economy' THEN 1 ELSE 0 END) AS Biglietti_Economy,
+    SUM(CASE WHEN b.Classe_Servizio = 'Business' THEN 1 ELSE 0 END) AS Biglietti_Business,
+    SUM(CASE WHEN b.Classe_Servizio = 'First' THEN 1 ELSE 0 END) AS Biglietti_First
+FROM Prenotazione p
+JOIN Biglietto b ON p.ID_Prenotazione = b.ID_Prenotazione
+JOIN Pagamento pag ON p.ID_Prenotazione = pag.ID_Prenotazione
+WHERE p.Stato_Prenotazione = 'Confermata'
+    AND pag.Stato_Pagamento = 'Completato'
+    AND DATE(p.Data_Prenotazione) BETWEEN '2025-08-01' AND '2025-08-31'
+GROUP BY DATE(p.Data_Prenotazione)
+ORDER BY Data;
+
+-- 6. Trova tutti i biglietti acquistati da un passeggero tramite codice fiscale
+SELECT 
+    b.ID_Biglietto,
+    b.Numero_Posto,
+    v.Numero_Volo,
+    v.Data_Volo,
+    v.Ora_Partenza,
+    v.Ora_Arrivo,
+    b.Classe_Servizio,
+    ap.Città AS Città_Partenza,
+    aa.Città AS Città_Arrivo,
+    p.PNR,
+    b.Stato_Biglietto
+FROM Biglietto b
+JOIN Prenotazione pr ON b.ID_Prenotazione = pr.ID_Prenotazione
+JOIN Passeggero p ON pr.ID_Passeggero = p.ID_Passeggero
+JOIN Volo v ON b.Numero_Volo = v.Numero_Volo
+JOIN Aeroporto ap ON v.Aeroporto_Partenza = ap.Codice_Aeroporto
+JOIN Aeroporto aa ON v.Aeroporto_Arrivo = aa.Codice_Aeroporto
+WHERE p.Codice_Fiscale = 'RSSMRA85C15H501Z'
+    AND pr.Stato_Prenotazione = 'Confermata'
+ORDER BY v.Data_Volo, v.Ora_Partenza;
+
+-- 7. Elenco dei passeggeri che partono da un aeroporto specifico in una data
+SELECT DISTINCT 
+    p.Nome, 
+    p.Cognome, 
+    p.Codice_Fiscale,
+    p.Email,
+    pr.PNR,
+    v.Numero_Volo,
+    v.Ora_Partenza,
+    b.Classe_Servizio,
+    b.Numero_Posto
+FROM Passeggero p
+JOIN Prenotazione pr ON p.ID_Passeggero = pr.ID_Passeggero
+JOIN Biglietto b ON pr.ID_Prenotazione = b.ID_Prenotazione
+JOIN Volo v ON b.Numero_Volo = v.Numero_Volo
+JOIN Aeroporto a ON v.Aeroporto_Partenza = a.Codice_Aeroporto
+WHERE a.Codice_Aeroporto = 'FCO' 
+    AND v.Data_Volo = '2025-08-15'
+    AND pr.Stato_Prenotazione = 'Confermata'
+    AND b.Stato_Biglietto = 'Valido'
+ORDER BY v.Ora_Partenza, p.Cognome, p.Nome;
+
+
+-- FINE DUMP SQL
