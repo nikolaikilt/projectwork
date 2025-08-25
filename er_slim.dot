@@ -1,0 +1,56 @@
+digraph ER {
+  graph [rankdir=LR splines=ortho nodesep=1.0 ranksep=1.0 bgcolor=white];
+  node [fontname="Arial" style=filled fillcolor=lightgrey shape=rectangle];
+
+  // Entità
+  Passeggero [label="Passeggero"];
+  Aeroporto [label="Aeroporto"];
+  Aereo [label="Aereo"];
+  Volo [label="Volo"];
+  Scalo [label="Scalo"];
+  Prenotazione [label="Prenotazione"];
+  ModificaPrenotazione [label="Modifica Prenotazione"];
+  Biglietto [label="Biglietto"];
+  Pagamento [label="Pagamento"];
+
+  // Relazioni
+  PasseggeroPrenotazione [shape=diamond label="prenota"];
+  Passeggero -> PasseggeroPrenotazione [label="1"];
+  PasseggeroPrenotazione -> Prenotazione [label="0..N"];
+
+  PrenotazioneModifica [shape=diamond label="ha"];
+  Prenotazione -> PrenotazioneModifica [label="1"];
+  PrenotazioneModifica -> ModificaPrenotazione [label="0..N"];
+
+  PrenotazioneBiglietto [shape=diamond label="include"];
+  Prenotazione -> PrenotazioneBiglietto [label="1"];
+  PrenotazioneBiglietto -> Biglietto [label="0..N"];
+
+  PrenotazionePagamento [shape=diamond label="ha"];
+  Prenotazione -> PrenotazionePagamento [label="1"];
+  PrenotazionePagamento -> Pagamento [label="1"];
+
+  VoloBiglietto [shape=diamond label="include"];
+  Volo -> VoloBiglietto [label="1"];
+  VoloBiglietto -> Biglietto [label="0..N"];
+
+  AereoVolo [shape=diamond label="effettua"];
+  Aereo -> AereoVolo [label="1"];
+  AereoVolo -> Volo [label="0..N"];
+
+  AeroportoVoloPartenza [shape=diamond label="partenza"];
+  Aeroporto -> AeroportoVoloPartenza [label="1"];
+  AeroportoVoloPartenza -> Volo [label="0..N"];
+
+  AeroportoVoloArrivo [shape=diamond label="arrivo"];
+  Aeroporto -> AeroportoVoloArrivo [label="1"];
+  AeroportoVoloArrivo -> Volo [label="0..N"];
+
+  PrenotazioneScalo [shape=diamond label="ha"];
+  Prenotazione -> PrenotazioneScalo [label="1"];
+  PrenotazioneScalo -> Scalo [label="1..N"];
+
+  VoloScalo [shape=diamond label="collegato a"];
+  Volo -> VoloScalo [label="1"];
+  VoloScalo -> Scalo [label="0..N"];
+}

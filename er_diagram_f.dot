@@ -1,0 +1,185 @@
+digraph ER {
+  graph [rankdir=LR splines=ortho nodesep=1.0 ranksep=1.0 bgcolor=white];
+  node [fontname="Arial" style=filled fillcolor=lightgrey];
+
+  // Entità
+  Passeggero [label="Passeggero" shape=rectangle];
+  Aeroporto [label="Aeroporto" shape=rectangle];
+  Aereo [label="Aereo" shape=rectangle];
+  Volo [label="Volo" shape=rectangle];
+  Scalo [label="Scalo" shape=rectangle];
+  Prenotazione [label="Prenotazione" shape=rectangle];
+  ModificaPrenotazione [label="Modifica Prenotazione" shape=rectangle];
+  Biglietto [label="Biglietto" shape=rectangle];
+  Pagamento [label="Pagamento" shape=rectangle];
+
+  // Attributi Passeggero
+  ID_Passeggero [label=<<u>ID_Passeggero</u>> shape=ellipse fillcolor=white];
+  Nome [label="Nome" shape=ellipse fillcolor=white];
+  Cognome [label="Cognome" shape=ellipse fillcolor=white];
+  Data_Nascita [label="Data Nascita" shape=ellipse fillcolor=white];
+  Documento_Identita [label="Documento Identita\n(unique)" shape=ellipse fillcolor=white];
+  Telefono [label="Telefono\n(optional)" shape=ellipse fillcolor=white];
+  Email [label="Email\n(unique)" shape=ellipse fillcolor=white];
+  Codice_Fiscale [label="Codice Fiscale\n(unique)" shape=ellipse fillcolor=white];
+
+  Passeggero -> ID_Passeggero;
+  Passeggero -> Nome;
+  Passeggero -> Cognome;
+  Passeggero -> Data_Nascita;
+  Passeggero -> Documento_Identita;
+  Passeggero -> Telefono;
+  Passeggero -> Email;
+  Passeggero -> Codice_Fiscale;
+
+  // Attributi Aeroporto
+  Codice_Aeroporto [label=<<u>Codice Aeroporto</u>> shape=ellipse fillcolor=white];
+  Nome_Aeroporto [label="Nome" shape=ellipse fillcolor=white];
+  Citta [label="Città" shape=ellipse fillcolor=white];
+  Nazione [label="Nazione" shape=ellipse fillcolor=white];
+  Fuso_Orario [label="Fuso Orario" shape=ellipse fillcolor=white];
+
+  Aeroporto -> Codice_Aeroporto;
+  Aeroporto -> Nome_Aeroporto;
+  Aeroporto -> Citta;
+  Aeroporto -> Nazione;
+  Aeroporto -> Fuso_Orario;
+
+  // Attributi Aereo
+  ID_Aereo [label=<<u>ID Aereo</u>> shape=ellipse fillcolor=white];
+  Modello [label="Modello" shape=ellipse fillcolor=white];
+  Capacita_Totale [label="Capacità Totale" shape=ellipse fillcolor=white];
+  Capacita_Economy [label="Capacità Economy" shape=ellipse fillcolor=white];
+  Capacita_Business [label="Capacità Business" shape=ellipse fillcolor=white];
+  Capacita_First [label="Capacità First" shape=ellipse fillcolor=white];
+
+  Aereo -> ID_Aereo;
+  Aereo -> Modello;
+  Aereo -> Capacita_Totale;
+  Aereo -> Capacita_Economy;
+  Aereo -> Capacita_Business;
+  Aereo -> Capacita_First;
+
+  // Attributi Volo
+  ID_Volo [label=<<u>ID Volo</u>> shape=ellipse fillcolor=white];
+  Numero_Volo [label="Numero Volo" shape=ellipse fillcolor=white];
+  Data_Volo [label="Data Volo" shape=ellipse fillcolor=white];
+  Data_Arrivo [label="Data Arrivo" shape=ellipse fillcolor=white];
+  Ora_Partenza [label="Ora Partenza" shape=ellipse fillcolor=white];
+  Ora_Arrivo [label="Ora Arrivo" shape=ellipse fillcolor=white];
+  Prezzo_Economy [label="Prezzo Economy" shape=ellipse fillcolor=white];
+  Prezzo_Business [label="Prezzo Business" shape=ellipse fillcolor=white];
+  Prezzo_First [label="Prezzo First" shape=ellipse fillcolor=white];
+
+  Volo -> ID_Volo;
+  Volo -> Numero_Volo;
+  Volo -> Data_Volo;
+  Volo -> Data_Arrivo;
+  Volo -> Ora_Partenza;
+  Volo -> Ora_Arrivo;
+  Volo -> Prezzo_Economy;
+  Volo -> Prezzo_Business;
+  Volo -> Prezzo_First;
+
+  // Attributi Scalo
+  ID_Scalo [label=<<u>ID Scalo</u>> shape=ellipse fillcolor=white];
+  Ordine_Scalo [label="Ordine Scalo" shape=ellipse fillcolor=white];
+
+  Scalo -> ID_Scalo;
+  Scalo -> Ordine_Scalo;
+
+  // Attributi Prenotazione
+  ID_Prenotazione [label=<<u>ID Prenotazione</u>> shape=ellipse fillcolor=white];
+  PNR [label="PNR (unique)" shape=ellipse fillcolor=white];
+  Data_Prenotazione [label="Data Prenotazione" shape=ellipse fillcolor=white];
+  Stato_Prenotazione [label="Stato Prenotazione" shape=ellipse fillcolor=white];
+  Prezzo_Totale [label="Prezzo Totale" shape=ellipse fillcolor=white];
+
+  Prenotazione -> ID_Prenotazione;
+  Prenotazione -> PNR;
+  Prenotazione -> Data_Prenotazione;
+  Prenotazione -> Stato_Prenotazione;
+  Prenotazione -> Prezzo_Totale;
+
+  // Attributi Modifica Prenotazione
+  ID_Modifica [label=<<u>ID Modifica</u>> shape=ellipse fillcolor=white];
+  Data_Modifica [label="Data Modifica" shape=ellipse fillcolor=white];
+  Tipo_Modifica [label="Tipo Modifica" shape=ellipse fillcolor=white];
+  Dettagli_Modifica [label="Dettagli Modifica" shape=ellipse fillcolor=white];
+  Costo_Modifica [label="Costo Modifica" shape=ellipse fillcolor=white];
+  Stato_Modifica [label="Stato Modifica" shape=ellipse fillcolor=white];
+
+  ModificaPrenotazione -> ID_Modifica;
+  ModificaPrenotazione -> Data_Modifica;
+  ModificaPrenotazione -> Tipo_Modifica;
+  ModificaPrenotazione -> Dettagli_Modifica;
+  ModificaPrenotazione -> Costo_Modifica;
+  ModificaPrenotazione -> Stato_Modifica;
+
+  // Attributi Biglietto
+  ID_Biglietto [label=<<u>ID Biglietto</u>> shape=ellipse fillcolor=white];
+  Numero_Posto [label="Numero Posto" shape=ellipse fillcolor=white];
+  Classe_Servizio [label="Classe Servizio" shape=ellipse fillcolor=white];
+  Check_In_Effettuato [label="Check In Effettuato" shape=ellipse fillcolor=white];
+  Stato_Biglietto [label="Stato Biglietto" shape=ellipse fillcolor=white];
+
+  Biglietto -> ID_Biglietto;
+  Biglietto -> Numero_Posto;
+  Biglietto -> Classe_Servizio;
+  Biglietto -> Check_In_Effettuato;
+  Biglietto -> Stato_Biglietto;
+
+  // Attributi Pagamento
+  ID_Pagamento [label=<<u>ID Pagamento</u>> shape=ellipse fillcolor=white];
+  Importo [label="Importo" shape=ellipse fillcolor=white];
+  Metodo_Pagamento [label="Metodo Pagamento" shape=ellipse fillcolor=white];
+  Data_Pagamento [label="Data Pagamento" shape=ellipse fillcolor=white];
+  Stato_Pagamento [label="Stato Pagamento" shape=ellipse fillcolor=white];
+
+  Pagamento -> ID_Pagamento;
+  Pagamento -> Importo;
+  Pagamento -> Metodo_Pagamento;
+  Pagamento -> Data_Pagamento;
+  Pagamento -> Stato_Pagamento;
+
+  // Relazioni
+  PasseggeroPrenotazione [shape=diamond label="prenota"];
+  Passeggero -> PasseggeroPrenotazione [label="1"];
+  PasseggeroPrenotazione -> Prenotazione [label="0..N"];
+
+  PrenotazioneModifica [shape=diamond label="ha"];
+  Prenotazione -> PrenotazioneModifica [label="1"];
+  PrenotazioneModifica -> ModificaPrenotazione [label="0..N"];
+
+  PrenotazioneBiglietto [shape=diamond label="include"];
+  Prenotazione -> PrenotazioneBiglietto [label="1"];
+  PrenotazioneBiglietto -> Biglietto [label="0..N"];
+
+  PrenotazionePagamento [shape=diamond label="ha"];
+  Prenotazione -> PrenotazionePagamento [label="1"];
+  PrenotazionePagamento -> Pagamento [label="1"];
+
+  VoloBiglietto [shape=diamond label="include"];
+  Volo -> VoloBiglietto [label="1"];
+  VoloBiglietto -> Biglietto [label="0..N"];
+
+  AereoVolo [shape=diamond label="effettua"];
+  Aereo -> AereoVolo [label="1"];
+  AereoVolo -> Volo [label="0..N"];
+
+  AeroportoVoloPartenza [shape=diamond label="partenza"];
+  Aeroporto -> AeroportoVoloPartenza [label="1"];
+  AeroportoVoloPartenza -> Volo [label="0..N"];
+
+  AeroportoVoloArrivo [shape=diamond label="arrivo"];
+  Aeroporto -> AeroportoVoloArrivo [label="1"];
+  AeroportoVoloArrivo -> Volo [label="0..N"];
+
+  PrenotazioneScalo [shape=diamond label="ha"];
+  Prenotazione -> PrenotazioneScalo [label="1"];
+  PrenotazioneScalo -> Scalo [label="1..N"];
+
+  VoloScalo [shape=diamond label="collegato a"];
+  Volo -> VoloScalo [label="1"];
+  VoloScalo -> Scalo [label="0..N"];
+}
