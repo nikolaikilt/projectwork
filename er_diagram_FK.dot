@@ -1,0 +1,73 @@
+digraph ER {
+  graph [rankdir=LR splines=ortho nodesep=1.0 ranksep=1.0 bgcolor=white];
+  node [fontname="Arial" style=filled fillcolor=lightgrey];
+
+  // Entità (rettangoli)
+  Passeggero [label="Passeggero" shape=rectangle];
+  Aeroporto [label="Aeroporto" shape=rectangle];
+  Aereo [label="Aereo" shape=rectangle];
+  Volo [label="Volo" shape=rectangle];
+  Scalo [label="Scalo" shape=rectangle];
+  Prenotazione [label="Prenotazione" shape=rectangle];
+  ModificaPrenotazione [label="Modifica Prenotazione" shape=rectangle];
+  Biglietto [label="Biglietto" shape=rectangle];
+  Pagamento [label="Pagamento" shape=rectangle];
+
+  // Chiavi primarie (ellissi sottolineate)
+  ID_Passeggero [label=<<u>ID_Passeggero</u>> shape=ellipse fillcolor=white];
+  Codice_Aeroporto [label=<<u>Codice Aeroporto</u>> shape=ellipse fillcolor=white];
+  ID_Aereo [label=<<u>ID Aereo</u>> shape=ellipse fillcolor=white];
+  Numero_Volo [label=<<u>Numero Volo</u>> shape=ellipse fillcolor=white];
+  ID_Scalo [label=<<u>ID Scalo</u>> shape=ellipse fillcolor=white];
+  ID_Prenotazione [label=<<u>ID Prenotazione</u>> shape=ellipse fillcolor=white];
+  ID_Modifica [label=<<u>ID Modifica</u>> shape=ellipse fillcolor=white];
+  ID_Biglietto [label=<<u>ID Biglietto</u>> shape=ellipse fillcolor=white];
+  ID_Pagamento [label=<<u>ID Pagamento</u>> shape=ellipse fillcolor=white];
+
+  // Associazione PK alle entità
+  Passeggero -> ID_Passeggero;
+  Aeroporto -> Codice_Aeroporto;
+  Aereo -> ID_Aereo;
+  Volo -> Numero_Volo;
+  Scalo -> ID_Scalo;
+  Prenotazione -> ID_Prenotazione;
+  ModificaPrenotazione -> ID_Modifica;
+  Biglietto -> ID_Biglietto;
+  Pagamento -> ID_Pagamento;
+
+  // FOREIGN KEYS (ellissi normali)
+  ID_Aereo_FK [label="ID Aereo (FK)" shape=ellipse fillcolor=white];
+  Aeroporto_Partenza [label="Aeroporto Partenza (FK)" shape=ellipse fillcolor=white];
+  Aeroporto_Arrivo [label="Aeroporto Arrivo (FK)" shape=ellipse fillcolor=white];
+  Numero_Volo_Scalo [label="Numero Volo (FK)" shape=ellipse fillcolor=white];
+  Codice_Aeroporto_Scalo [label="Codice Aeroporto Scalo (FK)" shape=ellipse fillcolor=white];
+  ID_Passeggero_FK [label="ID Passeggero (FK)" shape=ellipse fillcolor=white];
+  ID_Prenotazione_Mod [label="ID Prenotazione (FK)" shape=ellipse fillcolor=white];
+  ID_Prenotazione_Big [label="ID Prenotazione (FK)" shape=ellipse fillcolor=white];
+  Numero_Volo_Big [label="Numero Volo (FK)" shape=ellipse fillcolor=white];
+  ID_Prenotazione_Pag [label="ID Prenotazione (FK)" shape=ellipse fillcolor=white];
+
+  // Collegamento FK alle entità (appartenenza)
+  Volo -> ID_Aereo_FK;
+  Volo -> Aeroporto_Partenza;
+  Volo -> Aeroporto_Arrivo;
+  Scalo -> Numero_Volo_Scalo;
+  Scalo -> Codice_Aeroporto_Scalo;
+  Prenotazione -> ID_Passeggero_FK;
+  ModificaPrenotazione -> ID_Prenotazione_Mod;
+  Biglietto -> ID_Prenotazione_Big;
+  Biglietto -> Numero_Volo_Big;
+  Pagamento -> ID_Prenotazione_Pag;
+
+  // RELAZIONI FK → PK (colore rosso per evidenziarle)
+  ID_Aereo_FK -> ID_Aereo [color=red label="FK"];
+  Aeroporto_Partenza -> Codice_Aeroporto [color=red label="FK"];
+  Aeroporto_Arrivo -> Codice_Aeroporto [color=red label="FK"];
+  Numero_Volo_Scalo -> Numero_Volo [color=red label="FK"];
+  Codice_Aeroporto_Scalo -> Codice_Aeroporto [color=red label="FK"];
+  ID_Passeggero_FK -> ID_Passeggero [color=red label="FK"];
+  ID_Prenotazione_Mod -> ID_Prenotazione [color=red label="FK"];
+  ID_Prenotazione_Big -> ID_Prenotazione [color=red label="FK"];
+  Numero_Volo_Big -> Numero_Volo [color=red label="FK"];
+  ID_Prenotazione_Pag -> ID_Prenotazione [color=red label="FK"];
+}
